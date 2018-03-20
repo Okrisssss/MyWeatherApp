@@ -22,33 +22,33 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
-        android:layout_marginTop="29dp"
-        android:textSize="23sp"
-        android:textColor="@color/colorWhite"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="29dp"
+        android:textColor="@color/colorWhite"
+        android:textSize="23sp" />
 
     <TextView
         android:id="@+id/dateTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
-        android:textSize="23sp"
-        android:textColor="@color/colorWhite"
         android:layout_below="@+id/addressTextView"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/colorWhite"
+        android:textSize="23sp" />
 
     <EditText
         android:id="@+id/cityEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:layout_marginBottom="57dp"
         android:ems="10"
-        android:inputType="textPersonName"
         android:hint="@string/please_enter_city_name"
-        android:textColor="@color/colorWhite"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:inputType="textPersonName"
+        android:textColor="@color/colorWhite" />
 
     <Button
         android:id="@+id/weatherButton"

@@ -13,6 +13,8 @@ import java.net.URL;
 
 public class DownloadTask extends AsyncTask<String, Void, String> {
 
+    
+
     @Override
     protected String doInBackground(String... urls) {
 
@@ -49,6 +51,8 @@ public class DownloadTask extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
 
+        Log.i("Info", result);
+
         try {
             JSONObject jsonObject = new JSONObject(result);
             JSONObject weatherData = new JSONObject(jsonObject.getString("main"));
@@ -56,15 +60,13 @@ public class DownloadTask extends AsyncTask<String, Void, String> {
             Double temperature = Double.parseDouble(weatherData.getString("temp"));
             int temperatureFarengate = (int) (temperature * 1);
             String city = jsonObject.getString("name");
-            String country= placeData.getString("country");
+            String country = placeData.getString("country");
             Log.i("WeatherInfo", String.valueOf(temperatureFarengate));
             Log.i("WeatherInfo", country);
             Log.i("WeatherInfo", city);
 
-
             MainActivity.nameTextView.setText(city);
             MainActivity.temperatureTextView.setText(String.valueOf(temperatureFarengate));
-
 
 
         } catch (Exception e) {
