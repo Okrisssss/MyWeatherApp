@@ -64,9 +64,11 @@ public class DownloadTask extends AsyncTask<String, Void, String> {
             Log.i("WeatherInfo", String.valueOf(temperatureFarengate));
             Log.i("WeatherInfo", country);
             Log.i("WeatherInfo", city);
+/*
 
             MainActivity.nameTextView.setText(city);
             MainActivity.temperatureTextView.setText(String.valueOf(temperatureFarengate));
+*/
 
 
         } catch (Exception e) {
