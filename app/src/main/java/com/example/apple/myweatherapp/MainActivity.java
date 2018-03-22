@@ -71,9 +71,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-       // Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-       // final double latitude = location.getLongitude();
-        //final double longitude = location.getLatitude();
+        // Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        // final double latitude = location.getLongitude();
+        // final double longitude = location.getLatitude();
 
         locationListener = new LocationListener() {
 
