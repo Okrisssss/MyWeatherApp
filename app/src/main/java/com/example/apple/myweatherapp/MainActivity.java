@@ -19,12 +19,7 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.apple.weatherapplication.R;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -40,34 +35,24 @@ public class MainActivity extends AppCompatActivity {
     EditText cityEditText;
 
     static TextView nameTextView, temperatureTextView;
-
     LocationManager locationManager;
-
     LocationListener locationListener;
 
+    private Double latitude;
+    private Double longitude;
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == 1) {
-
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    {
-
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//
+//        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//
+//                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+//            }
+//        }
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,10 +69,11 @@ public class MainActivity extends AppCompatActivity {
         currentDate = DateFormat.getDateInstance(DateFormat.LONG).format(calendar.getTime());
         dateTextView.setText(currentDate);
 
+
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        double longitude = location.getLongitude();
-        double latitude = location.getLatitude();
+       // Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+       // final double latitude = location.getLongitude();
+        //final double longitude = location.getLatitude();
 
         locationListener = new LocationListener() {
 
@@ -111,72 +97,56 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+//
+//        geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+//
+//        try {
+//
+//            List<Address> listAddresses = geocoder.getFromLocation(latitude, longitude, 1);
+//
+//            if (listAddresses != null && listAddresses.size() > 0) {
+//
+//                Log.i("Place info", listAddresses.get(0).toString());
+//
+//                if (listAddresses.get(0).getLocality() != null) {
+//
+//                    address += listAddresses.get(0).getLocality() + ", ";
+//
+//                }
+//
+//                if (listAddresses.get(0).getCountryName() != null) {
+//
+//                    address += listAddresses.get(0).getCountryName();
+//                    addressTextView.setText(address);
+//                    //address = "";
+//
+//                }
+//
+//            }
+//
+//        } catch (IOException e) {
+//
+//            e.printStackTrace();
+//
+//        }
+//
+//        DownloadTask task = new DownloadTask();
+//        try {
+//
+//            task.execute("http://openweathermap.org/data/2.5/weather?lat=" + String.valueOf(latitude) + "&lon=" + String.valueOf(longitude) + "&appid=b6907d289e10d714a6e88b30761fae22").get();
+//
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//        }
 
-        geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-
-        try {
-
-            List<Address> listAddresses = geocoder.getFromLocation(latitude, longitude, 1);
-
-            if (listAddresses != null && listAddresses.size() > 0) {
-
-                Log.i("Place info", listAddresses.get(0).toString());
-
-                if (listAddresses.get(0).getLocality() != null) {
-
-                    address += listAddresses.get(0).getLocality() + ", ";
-
-                }
-
-                if (listAddresses.get(0).getCountryName() != null) {
-
-                    address += listAddresses.get(0).getCountryName();
-                    addressTextView.setText(address);
-                    //address = "";
-
-                }
-
-            }
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-
-        }
-
-        DownloadTask task = new DownloadTask();
-        try {
-
-            task.execute("http://openweathermap.org/data/2.5/weather?lat=" + String.valueOf(latitude) + "&lon=" + String.valueOf(longitude) + "&appid=b6907d289e10d714a6e88b30761fae22").get();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
-
-        if (Build.VERSION.SDK_INT < 23) {
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-
-        } else {
-
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-
-            } else {
-
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-
-                Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-                LatLng userLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-            }
-
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //ask for permision
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
         }
     }
 }
+
 
 
