@@ -41,18 +41,18 @@ public class MainActivity extends AppCompatActivity {
     private Double latitude;
     private Double longitude;
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//
-//        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//
-//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//
-//                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-//            }
-//        }
-//    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,14 +71,16 @@ public class MainActivity extends AppCompatActivity {
 
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        // Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        // final double latitude = location.getLongitude();
-        // final double longitude = location.getLatitude();
+        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        double latitude = location.getLongitude();
+        double longitude = location.getLatitude();
 
         locationListener = new LocationListener() {
 
             @Override
             public void onLocationChanged(Location location) {
+
+                //Log.i("Location info", location.toString());
 
             }
 
@@ -140,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 //            e.printStackTrace();
 //        }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             //ask for permision
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 
