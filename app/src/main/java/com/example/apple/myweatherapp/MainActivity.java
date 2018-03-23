@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -15,15 +17,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-
 import com.example.apple.weatherapplication.BuildConfig;
 import com.example.apple.weatherapplication.R;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
   private static final String TAG = MainActivity.class.getSimpleName();
@@ -31,19 +26,15 @@ public class MainActivity extends AppCompatActivity {
   private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
   /**
-   * Provides the entry point to the Fused Location Provider API.
-   */
-  private FusedLocationProviderClient mFusedLocationClient;
-
-  /**
    * Represents a geographical location.
    */
-  protected Location mLastLocation;
 
   private String mLatitudeLabel;
   private String mLongitudeLabel;
   private TextView mLatitudeText;
   private TextView mLongitudeText;
+  private LocationManager mLocationManager;
+  private LocationListener mLocationListener;
 
 
   @Override
@@ -56,7 +47,35 @@ public class MainActivity extends AppCompatActivity {
     mLatitudeText = (TextView) findViewById((R.id.latitude_text));
     mLongitudeText = (TextView) findViewById((R.id.longitude_text));
 
-    mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+    mLocationListener = new LocationListener() {
+      @Override
+      public void onLocationChanged(final Location location) {
+        if (location != null) {
+          mLatitudeText.setText(mLatitudeLabel + " is " + String.valueOf(location.getLatitude()));
+          mLongitudeText.setText(mLongitudeLabel + " is " + String.valueOf(location.getLongitude()));
+        } else {
+          mLatitudeText.setText("Latitude is null");
+          mLongitudeText.setText("Longitude is null");
+        }
+      }
+
+      @Override
+      public void onStatusChanged(String provider, int status, Bundle extras) {
+        // No need to implement for now
+      }
+
+      @Override
+      public void onProviderEnabled(String provider) {
+        // No need to implement for now
+      }
+
+      @Override
+      public void onProviderDisabled(String provider) {
+        // No need to implement for now
+      }
+    };
+
+    mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
   }
 
   @Override
@@ -78,39 +97,13 @@ public class MainActivity extends AppCompatActivity {
    * <p>
    * Note: this method should be called after location permission has been granted.
    */
+
+  // THIS IS VERY IMPORTANT ANNOTATION!!!!! It allows to write code independent of requesting permissions BRO.
   @SuppressWarnings("MissingPermission")
   private void getLastLocation() {
-    mFusedLocationClient.getLastLocation()
-            .addOnCompleteListener(this, new OnCompleteListener<Location>() {
-              @Override
-              public void onComplete(@NonNull Task<Location> task) {
-                if (task.isSuccessful() && task.getResult() != null) {
-                  mLastLocation = task.getResult();
+    mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000,
+            10, mLocationListener);
 
-                  mLatitudeText.setText(String.format(Locale.ENGLISH, "%s: %f",
-                          mLatitudeLabel,
-                          mLastLocation.getLatitude()));
-                  mLongitudeText.setText(String.format(Locale.ENGLISH, "%s: %f",
-                          mLongitudeLabel,
-                          mLastLocation.getLongitude()));
-                } else {
-                  Log.w(TAG, "getLastLocation:exception", task.getException());
-                  showSnackbar(getString(R.string.no_location_detected));
-                }
-              }
-            });
-  }
-
-  /**
-   * Shows a {@link Snackbar} using {@code text}.
-   *
-   * @param text The Snackbar text.
-   */
-  private void showSnackbar(final String text) {
-    View container = findViewById(R.id.main_activity_container);
-    if (container != null) {
-      Snackbar.make(container, text, Snackbar.LENGTH_LONG).show();
-    }
   }
 
   /**
@@ -120,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
    * @param actionStringId   The text of the action item.
    * @param listener         The listener associated with the Snackbar action.
    */
+
+  //You may be asking what is SnackBar. It's something like Toast but it's clikcable and ahs listener for that click.
+  //It appears in the bottom of the app and notify user that he did not grant permissions
+  //Try to dismiss permissions when first launch the app and you will what happen
+  //Do not worry about SnackBar, bettern UNDERSTAND other code.
   private void showSnackbar(final int mainTextStringId, final int actionStringId,
                             View.OnClickListener listener) {
     Snackbar.make(findViewById(android.R.id.content),
@@ -132,25 +130,30 @@ public class MainActivity extends AppCompatActivity {
    * Return the current state of the permissions needed.
    */
   private boolean checkPermissions() {
-    int permissionState = ActivityCompat.checkSelfPermission(this,
+    int permissionStateCoarse = ActivityCompat.checkSelfPermission(this,
             Manifest.permission.ACCESS_COARSE_LOCATION);
-    return permissionState == PackageManager.PERMISSION_GRANTED;
+    int permissionStateFine = ActivityCompat.checkSelfPermission(this,
+            Manifest.permission.ACCESS_FINE_LOCATION);
+    return permissionStateCoarse == PackageManager.PERMISSION_GRANTED && permissionStateFine == PackageManager.PERMISSION_GRANTED;
   }
 
   private void startLocationPermissionRequest() {
     ActivityCompat.requestPermissions(MainActivity.this,
-            new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+            new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
             REQUEST_PERMISSIONS_REQUEST_CODE);
   }
 
   private void requestPermissions() {
-    boolean shouldProvideRationale =
+    boolean shouldProvideRationaleCoarse =
             ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_COARSE_LOCATION);
 
+    boolean shouldProvideRationaleFine =
+            ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION);
     // Provide an additional rationale to the user. This would happen if the user denied the
     // request previously, but didn't check the "Don't ask again" checkbox.
-    if (shouldProvideRationale) {
+    if (shouldProvideRationaleCoarse || shouldProvideRationaleFine) {
       Log.i(TAG, "Displaying permission rationale to provide additional context.");
 
       showSnackbar(R.string.permission_rationale, android.R.string.ok,
@@ -216,8 +219,6 @@ public class MainActivity extends AppCompatActivity {
       }
     }
   }
-
-
 }
 
 
