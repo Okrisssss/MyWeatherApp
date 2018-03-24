@@ -18,7 +18,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.apple.myweatherapp.model.Weather;
 import com.example.apple.weatherapplication.BuildConfig;
 import com.example.apple.weatherapplication.R;
 
@@ -26,41 +28,85 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity {
   private static final String TAG = MainActivity.class.getSimpleName();
 
   private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
+  private MyLocationManager myLocationManager;
   /**
    * Represents a geographical location.
    */
 
   private String mLatitudeLabel;
   private String mLongitudeLabel;
+  private String mTemperatureLAbel;
   private TextView mLatitudeText;
   private TextView mLongitudeText;
   private TextView mAddressText;
+  private TextView temperatureTextView;
   private LocationManager mLocationManager;
   private LocationListener mLocationListener;
+  private WeatherService weatherService;
 
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-
+    myLocationManager = new MyLocationManager(getApplicationContext());
     mLatitudeLabel = getResources().getString(R.string.latitude_label);
     mLongitudeLabel = getResources().getString(R.string.longitude_label);
     mLatitudeText = (TextView) findViewById((R.id.latitude_text));
     mLongitudeText = (TextView) findViewById((R.id.longitude_text));
+    mAddressText = (TextView) findViewById(R.id.addres_text);
+    temperatureTextView = (TextView) findViewById(R.id.temperatureTextView);
+
+    Retrofit.Builder builder = new Retrofit.Builder()
+            .baseUrl("http://openweathermap.org/")
+            .addConverterFactory(GsonConverterFactory.create());
+
+    Retrofit retrofit = builder.build();
+
+    weatherService = retrofit.create(WeatherService.class);
+
+
+
 
     mLocationListener = new LocationListener() {
       @Override
       public void onLocationChanged(final Location location) {
         if (location != null) {
-          updateLocationName(location);
+          mAddressText.setText("Country is " + myLocationManager.updateLocationName(location).getCountryName() + " City is " + myLocationManager.updateLocationName(location).getLocality());
           mLatitudeText.setText(mLatitudeLabel + " is " + String.valueOf(location.getLatitude()));
           mLongitudeText.setText(mLongitudeLabel + " is " + String.valueOf(location.getLongitude()));
+
+
+          Call<WeatherInfo> call = weatherService.getMyWeatherGSON(myLocationManager.updateLocationName(location).getLocality(), "b6907d289e10d714a6e88b30761fae22");
+
+          call.enqueue(new Callback<WeatherInfo>() {
+
+            @Override
+            public void onResponse(Call<WeatherInfo> call, Response<WeatherInfo> response) {
+              WeatherInfo weatherInfo = response.body();
+              mTemperatureLAbel = String.valueOf(weatherInfo.getMain().getTemp());
+              Toast.makeText(MainActivity.this,"temperature is " + mTemperatureLAbel, Toast.LENGTH_SHORT).show();
+              temperatureTextView.setText(mTemperatureLAbel);
+
+            }
+
+            @Override
+            public void onFailure(Call<WeatherInfo> call, Throwable t) {
+              Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+          });
+
         } else {
           mLatitudeText.setText("Latitude is null");
           mLongitudeText.setText("Longitude is null");
@@ -225,44 +271,6 @@ public class MainActivity extends AppCompatActivity {
                   }
                 });
       }
-    }
-  }
-  public void updateLocationName(Location location) {
-
-    Log.i("LocationInfo", location.toString());
-
-    Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-
-    try {
-
-      String address = "Could not find address";
-
-      List<Address> listAddresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-
-      if (listAddresses != null && listAddresses.size() > 0) {
-
-        Log.i("PlaceInfo", listAddresses.get(0).toString());
-
-        address = "Address: ";
-
-        if (listAddresses.get(0).getLocality() != null) {
-
-          address += listAddresses.get(0).getLocality() + ", ";
-
-        }
-
-        if (listAddresses.get(0).getCountryName() != null) {
-
-          address += listAddresses.get(0).getCountryName() ;
-
-        }
-
-      }
-      mAddressText = (TextView)findViewById(R.id.addres_text);
-      mAddressText.setText(address);
-
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 }

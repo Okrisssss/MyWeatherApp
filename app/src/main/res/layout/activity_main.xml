@@ -49,6 +49,14 @@
         android:layout_below="@+id/longitude_text"
  />
 
+    <TextView
+        android:id="@+id/temperatureTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="133dp"
+        android:text="Temperature"
+        android:layout_below="@+id/addres_text"
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>
