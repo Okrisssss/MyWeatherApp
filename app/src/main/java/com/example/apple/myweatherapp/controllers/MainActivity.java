@@ -1,10 +1,9 @@
-package com.example.apple.myweatherapp;
+package com.example.apple.myweatherapp.controllers;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -20,122 +19,86 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.apple.myweatherapp.model.Weather;
+import com.example.apple.myweatherapp.geolocation.MyLocationManager;
+import com.example.apple.myweatherapp.networking.NetworkingManager;
 import com.example.apple.weatherapplication.BuildConfig;
 import com.example.apple.weatherapplication.R;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
+public class MainActivity extends AppCompatActivity implements NetworkingManager.WeatherCallback {
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
-public class MainActivity extends AppCompatActivity {
-  private static final String TAG = MainActivity.class.getSimpleName();
-
+  public static final String TAG = MainActivity.class.getSimpleName();
   private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
 
-  private MyLocationManager myLocationManager;
-  /**
-   * Represents a geographical location.
-   */
-
-  private String mLatitudeLabel;
-  private String mLongitudeLabel;
-  private String mTemperatureLAbel;
   private TextView mLatitudeText;
   private TextView mLongitudeText;
   private TextView mAddressText;
   private TextView temperatureTextView;
   private LocationManager mLocationManager;
   private LocationListener mLocationListener;
-  private WeatherService weatherService;
+
+  private MyLocationManager myLocationManager;
+  private NetworkingManager mNetworkingManager;
 
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    initViews();
+
     myLocationManager = new MyLocationManager(getApplicationContext());
-    mLatitudeLabel = getResources().getString(R.string.latitude_label);
-    mLongitudeLabel = getResources().getString(R.string.longitude_label);
-    mLatitudeText = (TextView) findViewById((R.id.latitude_text));
-    mLongitudeText = (TextView) findViewById((R.id.longitude_text));
-    mAddressText = (TextView) findViewById(R.id.addres_text);
-    temperatureTextView = (TextView) findViewById(R.id.temperatureTextView);
-
-    Retrofit.Builder builder = new Retrofit.Builder()
-            .baseUrl("http://openweathermap.org/")
-            .addConverterFactory(GsonConverterFactory.create());
-
-    Retrofit retrofit = builder.build();
-
-    weatherService = retrofit.create(WeatherService.class);
-
-
-
+    mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+    mNetworkingManager = new NetworkingManager(getApplicationContext());
+    mNetworkingManager.setWeatherCallback(this);
 
     mLocationListener = new LocationListener() {
       @Override
       public void onLocationChanged(final Location location) {
         if (location != null) {
-          mAddressText.setText("Country is " + myLocationManager.updateLocationName(location).getCountryName() + " City is " + myLocationManager.updateLocationName(location).getLocality());
-          mLatitudeText.setText(mLatitudeLabel + " is " + String.valueOf(location.getLatitude()));
-          mLongitudeText.setText(mLongitudeLabel + " is " + String.valueOf(location.getLongitude()));
+          Address address = myLocationManager.getCurrentLocation(location);
+          if (address != null) {
+            String country = address.getCountryName();
+            String city = address.getLocality();
+            mAddressText.setText(getResources().getString(R.string.location_information, country, city));
 
+            mLatitudeText.setText(getResources().getString(R.string.latitude_label, String.valueOf(location.getLatitude())));
+            mLongitudeText.setText(getResources().getString(R.string.longitude_label, String.valueOf(location.getLongitude())));
 
-          Call<WeatherInfo> call = weatherService.getMyWeatherGSON(myLocationManager.updateLocationName(location).getLocality(), "b6907d289e10d714a6e88b30761fae22");
-
-          call.enqueue(new Callback<WeatherInfo>() {
-
-            @Override
-            public void onResponse(Call<WeatherInfo> call, Response<WeatherInfo> response) {
-              WeatherInfo weatherInfo = response.body();
-              mTemperatureLAbel = String.valueOf(weatherInfo.getMain().getTemp());
-              Toast.makeText(MainActivity.this,"temperature is " + mTemperatureLAbel, Toast.LENGTH_SHORT).show();
-              temperatureTextView.setText(mTemperatureLAbel);
-
-            }
-
-            @Override
-            public void onFailure(Call<WeatherInfo> call, Throwable t) {
-              Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-          });
-
+            mNetworkingManager.getCurrentTemperatureForCity(myLocationManager.getCurrentLocation(location).getLocality());
+          } else {
+            showError();
+          }
         } else {
-          mLatitudeText.setText("Latitude is null");
-          mLongitudeText.setText("Longitude is null");
+          mLatitudeText.setText(R.string.latitude_null);
+          mLongitudeText.setText(R.string.longitude_null);
         }
       }
 
       @Override
       public void onStatusChanged(String provider, int status, Bundle extras) {
-        // No need to implement for now
+        // TODO something
       }
 
       @Override
       public void onProviderEnabled(String provider) {
-        // No need to implement for now
+        // TODO something
       }
 
       @Override
       public void onProviderDisabled(String provider) {
-        // No need to implement for now
+        // TODO something
       }
     };
+  }
 
-    mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+  private void showError() {
+    Toast.makeText(MainActivity.this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
   }
 
   @Override
   public void onStart() {
     super.onStart();
-
     if (!checkPermissions()) {
       requestPermissions();
     } else {
@@ -143,21 +106,10 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-  /**
-   * Provides a simple way of getting a device's location and is well suited for
-   * applications that do not require a fine-grained location and that do not need location
-   * updates. Gets the best and most recent location currently available, which may be null
-   * in rare cases when a location is not available.
-   * <p>
-   * Note: this method should be called after location permission has been granted.
-   */
-
-  // THIS IS VERY IMPORTANT ANNOTATION!!!!! It allows to write code independent of requesting permissions BRO.
   @SuppressWarnings("MissingPermission")
   private void getLastLocation() {
     mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000,
             10, mLocationListener);
-
   }
 
   /**
@@ -168,10 +120,6 @@ public class MainActivity extends AppCompatActivity {
    * @param listener         The listener associated with the Snackbar action.
    */
 
-  //You may be asking what is SnackBar. It's something like Toast but it's clikcable and ahs listener for that click.
-  //It appears in the bottom of the app and notify user that he did not grant permissions
-  //Try to dismiss permissions when first launch the app and you will what happen
-  //Do not worry about SnackBar, bettern UNDERSTAND other code.
   private void showSnackbar(final int mainTextStringId, final int actionStringId,
                             View.OnClickListener listener) {
     Snackbar.make(findViewById(android.R.id.content),
@@ -205,8 +153,7 @@ public class MainActivity extends AppCompatActivity {
     boolean shouldProvideRationaleFine =
             ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_FINE_LOCATION);
-    // Provide an additional rationale to the user. This would happen if the user denied the
-    // request previously, but didn't check the "Don't ask again" checkbox.
+
     if (shouldProvideRationaleCoarse || shouldProvideRationaleFine) {
       Log.i(TAG, "Displaying permission rationale to provide additional context.");
 
@@ -221,9 +168,6 @@ public class MainActivity extends AppCompatActivity {
 
     } else {
       Log.i(TAG, "Requesting permission");
-      // Request permission. It's possible this can be auto answered if device policy
-      // sets the permission in a given state or the user denied the permission
-      // previously and checked "Never ask again".
       startLocationPermissionRequest();
     }
   }
@@ -237,24 +181,11 @@ public class MainActivity extends AppCompatActivity {
     Log.i(TAG, "onRequestPermissionResult");
     if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
       if (grantResults.length <= 0) {
-        // If user interaction was interrupted, the permission request is cancelled and you
-        // receive empty arrays.
         Log.i(TAG, "User interaction was cancelled.");
       } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         // Permission granted.
         getLastLocation();
       } else {
-        // Permission denied.
-
-        // Notify the user via a SnackBar that they have rejected a core permission for the
-        // app, which makes the Activity useless. In a real app, core permissions would
-        // typically be best requested during a welcome-screen flow.
-
-        // Additionally, it is important to remember that a permission might have been
-        // rejected without asking the user for permission (device policy or "Never ask
-        // again" prompts). Therefore, a user interface affordance is typically implemented
-        // when permissions are denied. Otherwise, your app could appear unresponsive to
-        // touches or interactions which have required permissions.
         showSnackbar(R.string.permission_denied_explanation, R.string.settings,
                 new View.OnClickListener() {
                   @Override
@@ -272,6 +203,23 @@ public class MainActivity extends AppCompatActivity {
                 });
       }
     }
+  }
+
+  private void initViews() {
+    mLatitudeText = (TextView) findViewById((R.id.latitude_text));
+    mLongitudeText = (TextView) findViewById((R.id.longitude_text));
+    mAddressText = (TextView) findViewById(R.id.addres_text);
+    temperatureTextView = (TextView) findViewById(R.id.temperatureTextView);
+  }
+
+  @Override
+  public void onWeatherLoaded(String temperature) {
+    temperatureTextView.setText(temperature);
+  }
+
+  @Override
+  public void onFailedWeatherLoading(Throwable throwable) {
+    Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_SHORT).show();
   }
 }
 
