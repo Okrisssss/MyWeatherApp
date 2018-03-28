@@ -51,6 +51,7 @@ public class NetworkingManager {
   }
 
   public void getCurrentTemperatureForCity(String city) {
+    final String[] weatherIcon = new String[1];
     final String[] temperature = new String[1];
     Call<WeatherInfo> call = weatherService.getWeatherByCity(city, WEATHER_API_KEY);
 
@@ -58,8 +59,9 @@ public class NetworkingManager {
       @Override
       public void onResponse(Call<WeatherInfo> call, Response<WeatherInfo> response) {
         WeatherInfo weatherInfo = response.body();
+        weatherIcon[0] = weatherInfo.getWeather().get(0).getIcon();
         temperature[0] = String.valueOf(weatherInfo.getMain().getTemp());
-        weatherCallback.onWeatherLoaded(temperature[0]);
+        weatherCallback.onWeatherLoaded(temperature[0], weatherIcon[0]);
       }
 
       @Override
@@ -71,7 +73,7 @@ public class NetworkingManager {
 
 
   public interface WeatherCallback {
-    void onWeatherLoaded(String temperature);
+    void onWeatherLoaded(String temperature, String weatherIcon);
 
     void onFailedWeatherLoading(Throwable throwable);
   }

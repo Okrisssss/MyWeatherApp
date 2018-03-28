@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import com.example.apple.myweatherapp.geolocation.MyLocationManager;
 import com.example.apple.myweatherapp.networking.NetworkingManager;
 import com.example.apple.weatherapplication.BuildConfig;
 import com.example.apple.weatherapplication.R;
+import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity implements NetworkingManager.WeatherCallback {
 
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
   private TextView mLongitudeText;
   private TextView mAddressText;
   private TextView temperatureTextView;
+  private ImageView mImageView;
   private LocationManager mLocationManager;
   private LocationListener mLocationListener;
 
@@ -210,11 +213,22 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
     mLongitudeText = (TextView) findViewById((R.id.longitude_text));
     mAddressText = (TextView) findViewById(R.id.addres_text);
     temperatureTextView = (TextView) findViewById(R.id.temperatureTextView);
+    mImageView = (ImageView) findViewById(R.id.imageView);
   }
+/*
+  public void weatherIconDwonload(String weatherIcon){
+
+    String iconUrl = "http://openweathermap.org/img/w/" + weatherIcon + ".png";
+
+    Picasso.get(getApplicationContext().
+  }*/
 
   @Override
-  public void onWeatherLoaded(String temperature) {
+  public void onWeatherLoaded(String temperature, String weatherIcon) {
     temperatureTextView.setText(temperature);
+
+   String iconUrl = "http://openweathermap.org/img/w/" + weatherIcon + ".png";
+   Picasso.get().load(iconUrl).into(mImageView);
   }
 
   @Override
