@@ -1,6 +1,7 @@
 package com.example.apple.myweatherapp.networking;
 
 import android.content.Context;
+import android.os.Bundle;
 
 import com.example.apple.myweatherapp.model.WeatherInfo;
 
@@ -59,8 +60,8 @@ public class NetworkingManager {
       @Override
       public void onResponse(Call<WeatherInfo> call, Response<WeatherInfo> response) {
         WeatherInfo weatherInfo = response.body();
-        weatherIcon[0] = weatherInfo.getWeather().get(0).getIcon();
         temperature[0] = String.valueOf(weatherInfo.getMain().getTemp());
+        weatherIcon[0] = weatherInfo.getWeather().get(0).getIcon();
         weatherCallback.onWeatherLoaded(temperature[0], weatherIcon[0]);
       }
 
@@ -76,5 +77,6 @@ public class NetworkingManager {
     void onWeatherLoaded(String temperature, String weatherIcon);
 
     void onFailedWeatherLoading(Throwable throwable);
+
   }
 }

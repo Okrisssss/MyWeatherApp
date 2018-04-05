@@ -1,6 +1,9 @@
 package com.example.apple.myweatherapp.controllers;
 
 import android.Manifest;
+import android.app.Activity;
+
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -14,8 +17,11 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,12 +41,17 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
   private TextView mLongitudeText;
   private TextView mAddressText;
   private TextView temperatureTextView;
-  private ImageView mImageView;
+  private EditText mCityEditText;
+  private ImageView mWeatherIconImageView;
   private LocationManager mLocationManager;
   private LocationListener mLocationListener;
 
   private MyLocationManager myLocationManager;
   private NetworkingManager mNetworkingManager;
+
+  private  String cityForSearch;
+
+  private String temperature;
 
 
   @Override
@@ -65,9 +76,9 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
             String city = address.getLocality();
             mAddressText.setText(getResources().getString(R.string.location_information, country, city));
 
-            mLatitudeText.setText(getResources().getString(R.string.latitude_label, String.valueOf(location.getLatitude())));
+            /*mLatitudeText.setText(getResources().getString(R.string.latitude_label, String.valueOf(location.getLatitude())));
             mLongitudeText.setText(getResources().getString(R.string.longitude_label, String.valueOf(location.getLongitude())));
-
+*/
             mNetworkingManager.getCurrentTemperatureForCity(myLocationManager.getCurrentLocation(location).getLocality());
           } else {
             showError();
@@ -213,7 +224,8 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
     mLongitudeText = (TextView) findViewById((R.id.longitude_text));
     mAddressText = (TextView) findViewById(R.id.addres_text);
     temperatureTextView = (TextView) findViewById(R.id.temperatureTextView);
-    mImageView = (ImageView) findViewById(R.id.imageView);
+    mWeatherIconImageView = (ImageView) findViewById(R.id.weatherIconImageView);
+    mCityEditText = (EditText) findViewById(R.id.cityEditTExt);
   }
 /*
   public void weatherIconDwonload(String weatherIcon){
@@ -223,17 +235,50 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
     Picasso.get(getApplicationContext().
   }*/
 
+
   @Override
   public void onWeatherLoaded(String temperature, String weatherIcon) {
     temperatureTextView.setText(temperature);
+    if (temperature != null) {
+      this.temperature = temperature;
+    }
 
    String iconUrl = "http://openweathermap.org/img/w/" + weatherIcon + ".png";
-   Picasso.get().load(iconUrl).into(mImageView);
+   Picasso.get().load(iconUrl).into(mWeatherIconImageView);
   }
 
   @Override
   public void onFailedWeatherLoading(Throwable throwable) {
     Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_SHORT).show();
+  }
+
+  public void hideKAyboard(View view) {
+    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(),0);
+/*    String str1 = "str1";
+    String str2 = "str2";
+    blabla(s);*/
+  }
+
+  public void findWeather(View view) {
+    cityForSearch = mCityEditText.getText().toString();
+    mNetworkingManager.getCurrentTemperatureForCity(cityForSearch);
+
+
+
+    Bundle bundle = new Bundle();
+    bundle.putString("city", temperature);
+    // set Fragmentclass Argument
+    FragmentClass fragobj = new FragmentClass();
+    fragobj.setArguments(bundle);
+
+    FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+    fragmentTransaction.add(R.id.weatherContainer, fragobj);
+    fragmentTransaction.commit();
+
+
+
+
   }
 }
 
