@@ -32,7 +32,10 @@ import com.example.apple.weatherapplication.BuildConfig;
 import com.example.apple.weatherapplication.R;
 import com.squareup.picasso.Picasso;
 
-public class MainActivity extends AppCompatActivity implements NetworkingManager.WeatherCallback {
+import java.util.ArrayList;
+import java.util.Arrays;
+
+public class MainActivity extends AppCompatActivity implements NetworkingManager.WeatherCallback, NetworkingManager.WeatherCallbackForFiveDays {
 
   public static final String TAG = MainActivity.class.getSimpleName();
   private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
@@ -52,6 +55,9 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
   private  String cityForSearch;
 
   private String temperature;
+  private String[] weatherIcinForFiveDay;
+  private String[] temperatureForFiveDay;
+  private String[] dataForFiveDay;
 
 
   @Override
@@ -65,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
     mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
     mNetworkingManager = new NetworkingManager(getApplicationContext());
     mNetworkingManager.setWeatherCallback(this);
+    mNetworkingManager.setWeatherCallbackForFiveDays(this);
 
     mLocationListener = new LocationListener() {
       @Override
@@ -262,12 +269,18 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
 
   public void findWeather(View view) {
     cityForSearch = mCityEditText.getText().toString();
-    mNetworkingManager.getCurrentTemperatureForCity(cityForSearch);
+    mNetworkingManager.getCurrentTemperatureForCityForFiveDays(cityForSearch);
 
-
+    try {
+      Thread.sleep(10000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
     Bundle bundle = new Bundle();
-    bundle.putString("city", temperature);
+    bundle.putStringArrayList("weatherIconForFiveDays", new ArrayList<>(Arrays.asList(weatherIcinForFiveDay)));
+    bundle.putStringArrayList("temperatureForFiveDays", new ArrayList<>(Arrays.asList(temperatureForFiveDay)));
+    bundle.putStringArrayList("dataForFiveDays", new ArrayList<>(Arrays.asList(dataForFiveDay)));
     // set Fragmentclass Argument
     FragmentClass fragobj = new FragmentClass();
     fragobj.setArguments(bundle);
@@ -278,6 +291,18 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
 
 
 
+
+  }
+
+  @Override
+  public void onWeatherLoadedForFiveDays(String[] weatherIcinForFiveDay, String[] temperatureForFiveDay, String[] dataForFiveDay) {
+    this.weatherIcinForFiveDay = weatherIcinForFiveDay;
+    this.temperatureForFiveDay = temperatureForFiveDay;
+    this.dataForFiveDay = dataForFiveDay;
+  }
+
+  @Override
+  public void onFailedWeatherLoadingForFiveDays(Throwable throwable) {
 
   }
 }

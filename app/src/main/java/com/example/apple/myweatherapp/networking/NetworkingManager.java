@@ -1,9 +1,9 @@
 package com.example.apple.myweatherapp.networking;
 
 import android.content.Context;
-import android.os.Bundle;
 
 import com.example.apple.myweatherapp.model.WeatherInfo;
+import com.example.apple.myweatherapp.model_weather_for_five_days.WeatherInfoForFiveDays;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -21,6 +21,7 @@ public class NetworkingManager {
   private static String WEATHER_API_KEY = "b6907d289e10d714a6e88b30761fae22";
 
   private WeatherCallback weatherCallback;
+  private WeatherCallbackForFiveDays weatherCallbackForFiveDays;
   private Retrofit retrofitInstance;
   private WeatherService weatherService;
   private Context context;
@@ -39,6 +40,11 @@ public class NetworkingManager {
     this.weatherCallback = weatherCallback;
   }
 
+  public void setWeatherCallbackForFiveDays(WeatherCallbackForFiveDays weatherCallbackForFiveDays) {
+    this.weatherCallbackForFiveDays = weatherCallbackForFiveDays;
+    //ukazivaem kakoie aktivity budet slediti za otvetom
+  }
+
   public Retrofit getRetrofitInstance() {
     return retrofitInstance;
   }
@@ -54,9 +60,14 @@ public class NetworkingManager {
   public void getCurrentTemperatureForCity(String city) {
     final String[] weatherIcon = new String[1];
     final String[] temperature = new String[1];
+
+    final String[] weatherIcinForFiveDays = new String[5];
+    final String[] temperatureForFiveDays = new String[5];
+    final String[] dataForFiveDays = new String[5];
     Call<WeatherInfo> call = weatherService.getWeatherByCity(city, WEATHER_API_KEY);
 
-    call.enqueue(new Callback<WeatherInfo>() {
+
+      call.enqueue(new Callback<WeatherInfo>() {
       @Override
       public void onResponse(Call<WeatherInfo> call, Response<WeatherInfo> response) {
         WeatherInfo weatherInfo = response.body();
@@ -70,13 +81,51 @@ public class NetworkingManager {
         weatherCallback.onFailedWeatherLoading(t);
       }
     });
+
   }
 
+  public void getCurrentTemperatureForCityForFiveDays(String city) {
+
+    final String[] weatherIcinForFiveDays = new String[5];
+    final String[] temperatureForFiveDays = new String[5];
+    final String[] dataForFiveDays = new String[5];
+
+    Call<WeatherInfoForFiveDays> callWeather = weatherService.getWeatherByCityForFiveDays(city, WEATHER_API_KEY);
+
+
+
+    callWeather.enqueue(new Callback<WeatherInfoForFiveDays>() {
+      @Override
+      public void onResponse(Call<WeatherInfoForFiveDays> call, Response<WeatherInfoForFiveDays> response) {
+        WeatherInfoForFiveDays weatherInfoForFiveDays = response.body();
+
+        for (int i = 0; i < 5; i++){
+          temperatureForFiveDays[i] = String.valueOf(weatherInfoForFiveDays.getList().get(i).getMain().getTemp());
+          weatherIcinForFiveDays[i] = weatherInfoForFiveDays.getList().get(i).getWeather().get(0).getIcon();
+          dataForFiveDays[i] = String.valueOf(weatherInfoForFiveDays.getList().get(i).getDtTxt());
+          }
+          weatherCallbackForFiveDays.onWeatherLoadedForFiveDays(weatherIcinForFiveDays, temperatureForFiveDays, dataForFiveDays);
+      }
+
+      @Override
+      public void onFailure(Call<WeatherInfoForFiveDays> call, Throwable t) {
+        weatherCallback.onFailedWeatherLoading(t);
+      }
+    });
+  }
 
   public interface WeatherCallback {
+
     void onWeatherLoaded(String temperature, String weatherIcon);
 
     void onFailedWeatherLoading(Throwable throwable);
 
+  }
+
+  public interface WeatherCallbackForFiveDays{
+
+    void onWeatherLoadedForFiveDays(String[] weatherIcinForFiveDay, String[] temperatureForFiveDay, String[] dataForFiveDay);
+
+    void onFailedWeatherLoadingForFiveDays(Throwable throwable);
   }
 }
