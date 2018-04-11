@@ -1,14 +1,18 @@
-package com.example.apple.myweatherapp.model_weather_for_five_days;
+package com.example.apple.myweatherapp.model2;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Created by apple on 4/10/18.
+ * Created by apple on 4/11/18.
  */
 
-public class WeatherInfoForFiveDays {
+public class Example {
 
+
+    @SerializedName("city")
+    @Expose
+    private City city;
     @SerializedName("cod")
     @Expose
     private String cod;
@@ -21,9 +25,14 @@ public class WeatherInfoForFiveDays {
     @SerializedName("list")
     @Expose
     private java.util.List<List> list = null;
-    @SerializedName("city")
-    @Expose
-    private City city;
+
+    public City getCity() {
+        return city;
+    }
+
+    public void setCity(City city) {
+        this.city = city;
+    }
 
     public String getCod() {
         return cod;
@@ -56,13 +65,4 @@ public class WeatherInfoForFiveDays {
     public void setList(java.util.List<List> list) {
         this.list = list;
     }
-
-    public City getCity() {
-        return city;
-    }
-
-    public void setCity(City city) {
-        this.city = city;
-    }
-
 }

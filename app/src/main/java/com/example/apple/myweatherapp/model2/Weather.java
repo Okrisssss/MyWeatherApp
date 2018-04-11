@@ -1,11 +1,12 @@
-package com.example.apple.myweatherapp.model_weather_for_five_days;
+package com.example.apple.myweatherapp.model2;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Created by apple on 4/10/18.
+ * Created by apple on 4/11/18.
  */
+
 public class Weather {
 
     @SerializedName("id")
@@ -52,5 +53,4 @@ public class Weather {
     public void setIcon(String icon) {
         this.icon = icon;
     }
-
 }

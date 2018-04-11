@@ -271,13 +271,13 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
     cityForSearch = mCityEditText.getText().toString();
     mNetworkingManager.getCurrentTemperatureForCityForFiveDays(cityForSearch);
 
-    try {
+/*    try {
       Thread.sleep(10000);
     } catch (InterruptedException e) {
       e.printStackTrace();
-    }
+    }*/
 
-    Bundle bundle = new Bundle();
+    /*Bundle bundle = new Bundle();
     bundle.putStringArrayList("weatherIconForFiveDays", new ArrayList<>(Arrays.asList(weatherIcinForFiveDay)));
     bundle.putStringArrayList("temperatureForFiveDays", new ArrayList<>(Arrays.asList(temperatureForFiveDay)));
     bundle.putStringArrayList("dataForFiveDays", new ArrayList<>(Arrays.asList(dataForFiveDay)));
@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements NetworkingManager
     fragmentTransaction.add(R.id.weatherContainer, fragobj);
     fragmentTransaction.commit();
 
-
+*/
 
 
   }

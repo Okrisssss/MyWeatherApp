@@ -1,11 +1,10 @@
-package com.example.apple.myweatherapp.model_weather_for_five_days;
+package com.example.apple.myweatherapp.model2;
 
-import com.example.apple.myweatherapp.model.Coord;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Created by apple on 4/10/18.
+ * Created by apple on 4/11/18.
  */
 
 public class City {
@@ -22,6 +21,9 @@ public class City {
     @SerializedName("country")
     @Expose
     private String country;
+    @SerializedName("population")
+    @Expose
+    private Integer population;
 
     public Integer getId() {
         return id;
@@ -55,4 +57,11 @@ public class City {
         this.country = country;
     }
 
+    public Integer getPopulation() {
+        return population;
+    }
+
+    public void setPopulation(Integer population) {
+        this.population = population;
+    }
 }
