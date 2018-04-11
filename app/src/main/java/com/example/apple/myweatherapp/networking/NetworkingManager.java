@@ -17,8 +17,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkingManager {
 
+
   private static String BASE_URL = "http://openweathermap.org/";
   private static String WEATHER_API_KEY = "b6907d289e10d714a6e88b30761fae22";
+
+
+  public static final String UNITS = "metric";
+  public static final String CNT = "5";
+  public static final String FORMAT = "json";
+  public static final String APIKEY = "c26b8c34aadcefb17f2c135ec826128d";
+
 
   private WeatherCallback weatherCallback;
   private WeatherCallbackForFiveDays weatherCallbackForFiveDays;
@@ -90,7 +98,7 @@ public class NetworkingManager {
     final String[] temperatureForFiveDays = new String[5];
     final String[] dataForFiveDays = new String[5];
 
-    Call<WeatherInfoForFiveDays> callWeather = weatherService.getWeatherByCityForFiveDays(city, WEATHER_API_KEY);
+    Call<WeatherInfoForFiveDays> callWeather = weatherService.getWeatherByCityForFiveDays(city, UNITS, CNT, FORMAT, APIKEY);
 
 
 

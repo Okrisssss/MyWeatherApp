@@ -13,6 +13,11 @@ public interface WeatherService {
   @GET("/data/2.5/weather")
   Call<WeatherInfo> getWeatherByCity(@Query("q") String city, @Query("appid") String appid);
 
-  @GET("/data/2.5/forecast")
-  Call<WeatherInfoForFiveDays> getWeatherByCityForFiveDays(@Query("q") String city, @Query("appid") String appid);
+  @GET("data/2.5/forecast/daily")
+  Call<WeatherInfoForFiveDays> getWeatherByCityForFiveDays(@Query("q") String city, @Query("units") String units, @Query("cnt") String cnt, @Query("mode") String mode, @Query("apikey") String apikey);
+
+
+
 }
+
+
